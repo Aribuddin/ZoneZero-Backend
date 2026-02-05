@@ -73,7 +73,7 @@ except ValueError:
     if cred:
         try:
             firebase_admin.initialize_app(cred, {
-                'databaseURL': 'https://zonezero-b4967-default-rtdb.firebaseio.com'
+                'databaseURL': 'https://zonezero-new-default-rtdb.firebaseio.com'
             })
             print("[OK] Firebase initialized successfully")
         except Exception as e:
