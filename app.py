@@ -33,27 +33,47 @@ print(f"========================\n")
 
 # ========== INITIALIZE FIREBASE ==========
 # Initialize Firebase with proper error handling
+# Supports both file-based (local) and environment variable (Render) credentials
+import json
+
+def get_firebase_credentials():
+    """Get Firebase credentials from file or environment variables"""
+    # First try environment variable (for Render deployment)
+    firebase_creds_json = os.environ.get('FIREBASE_CREDENTIALS')
+    if firebase_creds_json:
+        try:
+            creds_dict = json.loads(firebase_creds_json)
+            print("[OK] Using Firebase credentials from environment variable")
+            return credentials.Certificate(creds_dict)
+        except Exception as e:
+            print(f"[WARN] Failed to parse FIREBASE_CREDENTIALS: {e}")
+    
+    # Fall back to file (for local development)
+    if os.path.exists('serviceAccountKey.json'):
+        print("[OK] Using Firebase credentials from serviceAccountKey.json")
+        return credentials.Certificate('serviceAccountKey.json')
+    
+    return None
+
 try:
     firebase_admin.get_app()
     print("[OK] Firebase app already initialized")
 except ValueError:
     # Firebase app doesn't exist, initialize it
-    try:
-        cred = credentials.Certificate('serviceAccountKey.json')
-        firebase_admin.initialize_app(cred, {
-            'databaseURL': 'https://zonezero-b4967-default-rtdb.firebaseio.com'
-            # ⚠️ REPLACE 'your-project-id' WITH YOUR ACTUAL FIREBASE PROJECT ID
-        })
-        print("[OK] Firebase initialized successfully")
-    except FileNotFoundError:
-        print("[ERROR] serviceAccountKey.json not found!")
-        print("Current directory:", os.getcwd())
-        print("Files in directory:", os.listdir('.'))
-        print("\n[ERROR] Please make sure serviceAccountKey.json is in your project folder")
-        exit(1)
-    except Exception as e:
-        print(f"[ERROR] Firebase initialization failed: {str(e)}")
-        print(f"Current directory: {os.getcwd()}")
+    cred = get_firebase_credentials()
+    if cred:
+        try:
+            firebase_admin.initialize_app(cred, {
+                'databaseURL': 'https://zonezero-b4967-default-rtdb.firebaseio.com'
+            })
+            print("[OK] Firebase initialized successfully")
+        except Exception as e:
+            print(f"[ERROR] Firebase initialization failed: {str(e)}")
+            print(f"Current directory: {os.getcwd()}")
+            exit(1)
+    else:
+        print("[ERROR] No Firebase credentials found!")
+        print("Set FIREBASE_CREDENTIALS env var or add serviceAccountKey.json")
         exit(1)
 
 # ========== FLASK INITIALIZATION ==========
