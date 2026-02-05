@@ -43,10 +43,16 @@ def get_firebase_credentials():
     if firebase_creds_json:
         try:
             creds_dict = json.loads(firebase_creds_json)
-            # Fix: Replace escaped newlines with actual newlines in private key
+            # Fix: Handle multiple escaping scenarios for private key
             if 'private_key' in creds_dict:
-                creds_dict['private_key'] = creds_dict['private_key'].replace('\\n', '\n')
-            print("[OK] Using Firebase credentials from environment variable")
+                pk = creds_dict['private_key']
+                # Handle double-escaped newlines (\\n -> \n)
+                pk = pk.replace('\\\\n', '\n')
+                # Handle single-escaped newlines (\n as literal string)
+                pk = pk.replace('\\n', '\n')
+                creds_dict['private_key'] = pk
+                print(f"[DEBUG] Private key length: {len(pk)}, starts with: {pk[:30]}")
+            print("[OK] Using Firebase credentials from environment variable (v2)")
             return credentials.Certificate(creds_dict)
         except Exception as e:
             print(f"[WARN] Failed to parse FIREBASE_CREDENTIALS: {e}")
