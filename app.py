@@ -43,6 +43,9 @@ def get_firebase_credentials():
     if firebase_creds_json:
         try:
             creds_dict = json.loads(firebase_creds_json)
+            # Fix: Replace escaped newlines with actual newlines in private key
+            if 'private_key' in creds_dict:
+                creds_dict['private_key'] = creds_dict['private_key'].replace('\\n', '\n')
             print("[OK] Using Firebase credentials from environment variable")
             return credentials.Certificate(creds_dict)
         except Exception as e:
