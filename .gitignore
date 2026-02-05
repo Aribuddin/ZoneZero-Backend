@@ -1,0 +1,30 @@
+# Environment variables
+.env
+
+# Firebase credentials
+serviceAccountKey.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Database files
+*.db
+
+# IDE
+.vscode/
+.idea/
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
